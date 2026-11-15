@@ -6,8 +6,8 @@ from stations.ecos.ecos_client import EcosClient
 
 HEARTBEAT_SECONDS = 3
 
-# Protocol name used inside switch[...]. Confirm "MM" on the real ECoS.
-SWITCH_PREFIX = {"DCC": "DCC", "MM": "MM"}
+# Protocol name used inside switch[...]. Confirmed "MOT" on the real ECoS.
+SWITCH_PREFIX = {"DCC": "DCC", "MM": "MOT"}
 
 
 def normalize_protocol(text):

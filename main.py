@@ -1,6 +1,8 @@
 import sys
 from PySide6.QtWidgets import QApplication
+from PySide6.QtGui import QIcon
 from main_window import MainWindow
+import config
 
 APP_STYLESHEET = """
 QPushButton {
@@ -47,11 +49,14 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
 
 def main():
     app = QApplication(sys.argv)
+    app.setApplicationName("Domino-26")
+    app.setDesktopFileName("domino-26")
+    app.setWindowIcon(QIcon(config.APP_ICON_PATH))
     app.setStyleSheet(APP_STYLESHEET)
 
     window = MainWindow()
-    window.showFullScreen() # comment out for debugging not in full screen
-    #window.show()          
+    #window.showFullScreen() # comment out for debugging not in full screen
+    window.show()          
 
     sys.exit(app.exec())
 

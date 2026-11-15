@@ -24,7 +24,7 @@ class MainWindow(QMainWindow):
         load_settings()
         recompute_derived_settings()
 
-        self.setWindowTitle("Switchboard")
+        self.setWindowTitle("Domino-26")
         self.resize(SCREEN_WIDTH, SCREEN_HEIGHT)
         self.setStyleSheet(f"background-color: {config.BACKGROUND_COLOR};")
 

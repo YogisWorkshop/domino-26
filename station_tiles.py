@@ -55,8 +55,7 @@ class ConnectionTile(StationTile):
             answer = QMessageBox.question(
                 QApplication.activeWindow(),
                 "Disconnect",
-                f"Disconnect from {config.STATION_TYPE}?\n\n"
-                "Depending on the station's settings, trains may stop.",
+                f"Disconnect from {config.STATION_TYPE}?",
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
                 QMessageBox.StandardButton.No,
             )

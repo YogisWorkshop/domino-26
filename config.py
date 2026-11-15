@@ -4,6 +4,7 @@ from enum import Enum, auto
 ASSETS_DIR = os.path.join(os.path.dirname(__file__), "assets")
 
 GEAR_ICON_PATH = os.path.join(ASSETS_DIR, "gear.svg")
+APP_ICON_PATH = os.path.join(ASSETS_DIR, "domino-26.svg")
 GEAR_SIZE = 40
 
 GRID_SIZE = 80
