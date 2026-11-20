@@ -1,9 +1,9 @@
 import config
 from PySide6.QtGui import QBrush, QColor, QPen, QPainter
 from PySide6.QtCore import Qt, QRectF, QPointF, QTimer
-from tile import Tile
+from tile import Tile, uses_turnout_id
 
-class Turnout(Tile):
+class StationTurnout(Tile):
     """A two-way turnout that a command station can drive.
 
     Several of these can share one address: the primary holds the address,
@@ -12,8 +12,8 @@ class Turnout(Tile):
     the tiles are thrown, straight when an even number are.
     """
     property_specs = [
-        {"key": "label", "label": "Label", "type": str, "max_length": 10, "default": ""},
-        {"key": "name", "label": "Name", "type": str, "default": ""},
+        {"key": "id", "label": "ID", "type": str, "max_length": 10, "default": ""},
+        {"key": "label", "label": "Label", "type": str, "default": ""},
         {"key": "address", "label": "Address", "type": int, "default": 0},
         {"key": "protocol", "label": "Protocol", "type": "choice", "choices": ["DCC", "MM"], "default": "DCC"},
         {"key": "invert", "label": "Invert Display", "type": bool, "default": False},
@@ -29,26 +29,40 @@ class Turnout(Tile):
 
     # ---- the group: a primary, plus the secondaries linked to its label ----
 
+    numeric_id_keys = ("id",)
+
+    def field_state(self, key):
+        if uses_turnout_id() and key in ("address", "protocol"):
+            return "disabled"             # the ID is what the DCC-EX uses
+        return "normal"
+
+    def station_key(self):
+        """(address, protocol) as the station knows this turnout, or None if not usable."""
+        if uses_turnout_id():
+            number = int(self.id) if self.id.isdigit() else 0
+            return (number, "DCC") if number > 0 else None
+        return (self.address, self.protocol) if self.address > 0 else None
+
     def _turnouts(self):
         scene = self.scene()
         if scene is None:
             return []
-        return [t for t in scene.tiles_by_cell.values() if isinstance(t, Turnout)]
+        return [t for t in scene.tiles_by_cell.values() if isinstance(t, StationTurnout)]
 
     def primary(self):
         """The tile that holds the address, or None if the link points at nothing."""
         if not self.linked_to:
             return self
         for tile in self._turnouts():
-            if tile.label == self.linked_to and not tile.linked_to:
+            if tile.id == self.linked_to and not tile.linked_to:
                 return tile
         return None
 
     def group(self):
         """Call on a primary. Returns the primary first, then its secondaries."""
         members = [self]
-        if self.label:
-            members += [t for t in self._turnouts() if t.linked_to == self.label]
+        if self.id:
+            members += [t for t in self._turnouts() if t.linked_to == self.id]
         return members
 
     @staticmethod
@@ -67,11 +81,16 @@ class Turnout(Tile):
             self.thrown = not self.thrown       # no station: just flip this half
             scene.update()
             return
-        if primary._pending_tile is not None or primary.address <= 0:
+        key = primary.station_key()
+        if key is None:
+            if uses_turnout_id():
+                print("DCC-EX in Turnout ID mode needs a number as ID")
+            return                              # no usable address
+        if primary._pending_tile is not None:
             return                              # still waiting for the last command
         # flipping this half flips the parity, so that is what we ask the station for
         wanted = not self._parity(primary.group())
-        if bridge.send_turnout(primary.address, primary.protocol, wanted):
+        if bridge.send_turnout(key[0], key[1], wanted):
             primary._wait_for_confirmation(self)
             # the picture changes when the station confirms, not now
 
@@ -91,7 +110,7 @@ class Turnout(Tile):
     # ---- the station speaking -------------------------------------------
 
     def on_station_turnout(self, address, protocol, diverging):
-        if self.linked_to or address != self.address or protocol != self.protocol:
+        if self.linked_to or self.station_key() != (address, protocol):
             return                              # not ours; secondaries never answer
         members = self.group()
         tile = self._pending_tile if self._pending_tile in members else None
@@ -127,11 +146,12 @@ class Turnout(Tile):
             self.draw_line(painter, "W", self.branch, active=False)
             self.draw_line(painter, "W", "E", active=True)
 
-class TurnoutRight(Turnout):
+
+class TurnoutRight(StationTurnout):
     branch = "S"
 
 
-class TurnoutLeft(Turnout):
+class TurnoutLeft(StationTurnout):
     branch = "N"
 
 
@@ -141,14 +161,39 @@ class Turnout3Way(Tile):
     Left = the upper branch, right = the lower branch, seen from the toe (west).
     Wire states: left thrown = (left r, right g), right thrown = (left g, right r),
     straight = (g, g). Both thrown at once cannot happen and is shown as unknown.
+    In DCC-EX Turnout ID mode the two turnouts are named by ID and Right ID.
     """
     property_specs = [
-        {"key": "label", "label": "Label", "type": str, "max_length": 10, "default": ""},
-        {"key": "name", "label": "Name", "type": str, "default": ""},
+        {"key": "id", "label": "ID", "type": str, "max_length": 10, "default": ""},
+        {"key": "id2", "label": "Right ID", "type": str, "max_length": 10, "default": ""},
+        {"key": "label", "label": "Label", "type": str, "default": ""},
         {"key": "address", "label": "Left Address", "type": int, "default": 0},
         {"key": "address2", "label": "Right Address", "type": int, "default": 0},
         {"key": "protocol", "label": "Protocol", "type": "choice", "choices": ["DCC", "MM"], "default": "DCC"}
         ]
+    numeric_id_keys = ("id", "id2")
+
+    def field_state(self, key):
+        if uses_turnout_id():
+            return "disabled" if key in ("address", "address2", "protocol") else "normal"
+        return "hidden" if key == "id2" else "normal"
+
+    def field_label(self, spec):
+        if uses_turnout_id() and spec["key"] == "id":
+            return "Left ID"                # in ID mode the first ID is the left turnout
+        return spec["label"]
+
+    def station_keys(self):
+        """(left, right, protocol) as the station knows them, or None if not usable."""
+        if uses_turnout_id():
+            left = int(self.id) if self.id.isdigit() else 0
+            right = int(self.id2) if self.id2.isdigit() else 0
+            protocol = "DCC"
+        else:
+            left, right, protocol = self.address, self.address2, self.protocol
+        if left <= 0 or right <= 0 or left == right:
+            return None
+        return (left, right, protocol)
 
     def __init__(self):
         super().__init__()
@@ -171,17 +216,23 @@ class Turnout3Way(Tile):
             scene.update()
             return
 
-        if self._target is not None or self.address <= 0 or self.address2 <= 0:
-            return                      # waiting for the last move, or not addressed
+        keys = self.station_keys()
+        if keys is None:
+            if uses_turnout_id():
+                print("DCC-EX in Turnout ID mode needs a number in ID and Right ID")
+            return
+        if self._target is not None:
+            return                      # waiting for the last move
+        left, right, protocol = keys
         # the branch that is going back to straight is always released first, so
         # the two turnouts are never both thrown, not even for a moment
         want_left = target == 1
         want_right = target == 2
-        commands = [(self.address2, want_right), (self.address, want_left)] if want_left \
-            else [(self.address, want_left), (self.address2, want_right)]
+        commands = [(right, want_right), (left, want_left)] if want_left \
+            else [(left, want_left), (right, want_right)]
         sent = False
         for address, diverging in commands:
-            sent = bridge.send_turnout(address, self.protocol, diverging) or sent
+            sent = bridge.send_turnout(address, protocol, diverging) or sent
         if sent:
             self._target = [want_left, want_right]
             self._pending_timer = QTimer()
@@ -201,11 +252,12 @@ class Turnout3Way(Tile):
         self._target = None
 
     def on_station_turnout(self, address, protocol, diverging):
-        if protocol != self.protocol or address not in (self.address, self.address2):
+        keys = self.station_keys()
+        if keys is None or protocol != keys[2] or address not in keys[:2]:
             return
-        if address == self.address:
+        if address == keys[0]:
             self._wire[0] = diverging
-        if address == self.address2:
+        if address == keys[1]:
             self._wire[1] = diverging
         left, right = self._wire
         if left and right:
@@ -243,8 +295,8 @@ class Turnout3Way(Tile):
 
 class Signal(Tile):
     property_specs = [
-        {"key": "label", "label": "Label", "type": str, "max_length": 10, "default": ""},
-        {"key": "name", "label": "Name", "type": str, "default": ""}, 
+        {"key": "id", "label": "ID", "type": str, "max_length": 10, "default": ""},
+        {"key": "label", "label": "Label", "type": str, "default": ""}, 
         {"key": "address", "label": "Address", "type": int, "default": 0},
         {"key": "protocol", "label": "Protocol", "type": "choice", "choices": ["DCC", "MM"], "default": "DCC"}
         ]
@@ -281,10 +333,3 @@ class Signal(Tile):
         center = self.point_at(0.5 if self.show_red else 0.75, signal_pos_y)
         radius = config.TRACK_WIDTH / 2
         painter.drawEllipse(center, radius, radius)
-
-
-  
-    
-
-
-     

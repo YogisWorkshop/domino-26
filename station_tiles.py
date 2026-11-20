@@ -12,8 +12,8 @@ from stations.bridge import ConnectionState
 class StationTile(Tile):
     """Base for tiles that show or control the station itself."""
     property_specs = [
-        {"key": "label", "label": "Label", "type": str, "max_length": 10, "default": ""},
-        {"key": "name", "label": "Name", "type": str, "default": ""},
+        {"key": "id", "label": "ID", "type": str, "max_length": 10, "default": ""},
+        {"key": "label", "label": "Label", "type": str, "default": ""},
     ]
 
     def _bridge(self):

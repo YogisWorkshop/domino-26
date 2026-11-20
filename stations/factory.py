@@ -1,4 +1,5 @@
 import config
+from stations.dccex.dccex_bridge import DccexBridge
 
 def create_bridge():
     """Returns a bridge for the configured station, or None for offline."""
@@ -19,6 +20,12 @@ def create_bridge():
             return None
         from stations.cs3.cs3_bridge import Cs3Bridge
         return Cs3Bridge(config.STATION_HOST)
+
+    if config.STATION_TYPE == "DCC-EX":
+        if not config.STATION_HOST:
+            print("DCC-EX needs a host / IP address")
+            return None
+        return DccexBridge(config.STATION_HOST, config.DCCEX_PORT, config.DCCEX_ADDRESSING == "Turnout ID")
     
     if config.STATION_TYPE != "None":
         print(f"Station type {config.STATION_TYPE} in not implemented yet")

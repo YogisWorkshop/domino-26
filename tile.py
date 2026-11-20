@@ -5,6 +5,9 @@ from PySide6.QtCore import Qt, QRectF, QPointF, QTimer
 import config
 from config import PanelMode, Tool
 
+def uses_turnout_id():
+    """True when the station wants the tile's ID (a number) instead of Address and Protocol."""
+    return config.STATION_TYPE == "DCC-EX" and config.DCCEX_ADDRESSING == "Turnout ID"
 
 class Tile(QGraphicsItem):
     property_specs = []
@@ -116,6 +119,16 @@ class Tile(QGraphicsItem):
 
     def on_station_turnout(self, address, protocol, diverging):
         pass
+
+    numeric_id_keys = ()      # properties that must be a number in DCC-EX Turnout ID mode
+
+    def field_state(self, key):
+        """For the Properties dialog: "normal", "disabled" (greyed) or "hidden"."""
+        return "normal"
+
+    def field_label(self, spec):
+        """For the Properties dialog: the text next to a field (a tile may change it)."""
+        return spec["label"]
     
     def on_release(self):
         self.cancel_long_press()
@@ -166,8 +179,8 @@ class Tile(QGraphicsItem):
 
 class Button(Tile):
     property_specs = [
-            {"key": "label", "label": "Label", "type": str, "max_length": 10, "default": ""},
-            {"key": "name", "label": "Name", "type": str, "default": ""}, 
+            {"key": "id", "label": "ID", "type": str, "max_length": 10, "default": ""},
+            {"key": "label", "label": "Label", "type": str, "default": ""}, 
             {"key": "address", "label": "Address", "type": int, "default": 0},
             {"key": "protocol", "label": "Protocol", "type": "choice", "choices": ["DCC", "MM"], "default": "DCC"},
             {"key": "color", "label": "Color", "type": "choice", "choices": ["Red", "Green", "Blue"], "default": "Blue"},

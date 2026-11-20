@@ -50,11 +50,13 @@ LONG_PRESS_MS = 1000
 
 CONFIRM_TIMEOUT_MS = 2000
 
-STATION_TYPES = ["None", "ECoS", "CS3", "LocoNet", "Simulator"]
+STATION_TYPES = ["None", "Simulator", "ECoS", "CS3", "DCC-EX", "LocoNet"]
 
 STATION_TYPE = "None"
 STATION_HOST = ""
 LOCONET_PORT = ""
+DCCEX_PORT = 2560
+DCCEX_ADDRESSING = "DCC address"      # or "Turnout ID"
 
 APPEARANCE_SPECS = [
     {"key": "TILE_COLOR", "label": "Tile Color", "type": "color"},
@@ -75,7 +77,9 @@ SYSTEM_SETTINGS = [
 
 INTERFACE_SETTINGS = [
     {"key": "STATION_TYPE", "label": "Command Station", "type": "choice", "choices": STATION_TYPES},
-    {"key": "STATION_HOST", "label": "Host / IP Address", "type": str, "stations": ["ECoS", "CS3"]},
+    {"key": "STATION_HOST", "label": "Host / IP Address", "type": str, "stations": ["ECoS", "CS3", "DCC-EX"]},
+    {"key": "DCCEX_PORT", "label": "Port", "type": int, "min": 1, "max": 65535, "stations": ["DCC-EX"]},
+    {"key": "DCCEX_ADDRESSING", "label": "DCC-EX Addressing", "type": "choice", "choices": ["DCC address", "Turnout ID"], "stations": ["DCC-EX"]},
     {"key": "LOCONET_PORT", "label": "Serial Port", "type": str, "stations": ["LocoNet"]}
 ]
 

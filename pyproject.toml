@@ -1,7 +1,7 @@
 [project]
 name = "domino-26"
 version = "0.1.0"
-description = "A touchscreen model railroad switchboard"
+description = "A touchscreen switchboard for model railroad control"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [

@@ -247,15 +247,19 @@ class MainWindow(QMainWindow):
 
         self.disarm_tool()
 
+    def _station_settings(self):
+        return (config.STATION_TYPE, config.STATION_HOST, config.LOCONET_PORT,
+                config.DCCEX_PORT, config.DCCEX_ADDRESSING)
+
     def open_settings(self):
         dialog = SettingsDialog(parent=self)
         if dialog.exec() == SettingsDialog.DialogCode.Accepted:
-            before = (config.STATION_TYPE, config.STATION_HOST, config.LOCONET_PORT)
+            before = self._station_settings()
             dialog.apply_settings()
             save_settings(overrides=dialog.pending_system_values())
             self.scene.update()
             self.refresh_tile_icons()
-            if before != (config.STATION_TYPE, config.STATION_HOST, config.LOCONET_PORT):
+            if before != self._station_settings():
                 self.apply_station_settings()
 
     def set_selection_buttons_enabeled(self, enabled):

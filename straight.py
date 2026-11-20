@@ -64,8 +64,8 @@ class StraightBumper(Tile):
 
 class TrackButton(Button):
     property_specs = [
-                {"key": "label", "label": "Label", "type": str, "max_length": 10, "default": ""},
-                {"key": "name", "label": "Name", "type": str, "default": ""}, 
+                {"key": "id", "label": "ID", "type": str, "max_length": 10, "default": ""},
+                {"key": "label", "label": "Label", "type": str, "default": ""}, 
                 {"key": "address", "label": "Address", "type": int, "default": 0},
                 {"key": "protocol", "label": "Protocol", "type": "choice", "choices": ["DCC", "MM"], "default": "DCC"},
                 {"key": "color", "label": "Color", "type": "choice", "choices": ["Red", "Green", "Blue"], "default": "Blue"},
