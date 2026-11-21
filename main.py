@@ -55,8 +55,10 @@ def main():
     app.setStyleSheet(APP_STYLESHEET)
 
     window = MainWindow()
-    #window.showFullScreen() # comment out for debugging not in full screen
-    window.show()          
+    if config.FULLSCREEN:
+        window.showFullScreen()
+    else: 
+        window.show()          
 
     sys.exit(app.exec())
 

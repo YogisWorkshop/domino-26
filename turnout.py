@@ -3,7 +3,7 @@ from PySide6.QtGui import QBrush, QColor, QPen, QPainter
 from PySide6.QtCore import Qt, QRectF, QPointF, QTimer
 from tile import Tile, uses_turnout_id
 
-class StationTurnout(Tile):
+class Turnout(Tile):
     """A two-way turnout that a command station can drive.
 
     Several of these can share one address: the primary holds the address,
@@ -47,7 +47,7 @@ class StationTurnout(Tile):
         scene = self.scene()
         if scene is None:
             return []
-        return [t for t in scene.tiles_by_cell.values() if isinstance(t, StationTurnout)]
+        return [t for t in scene.tiles_by_cell.values() if isinstance(t, Turnout)]
 
     def primary(self):
         """The tile that holds the address, or None if the link points at nothing."""
@@ -147,11 +147,11 @@ class StationTurnout(Tile):
             self.draw_line(painter, "W", "E", active=True)
 
 
-class TurnoutRight(StationTurnout):
+class TurnoutRight(Turnout):
     branch = "S"
 
 
-class TurnoutLeft(StationTurnout):
+class TurnoutLeft(Turnout):
     branch = "N"
 
 

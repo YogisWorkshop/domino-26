@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import (
     QDialog, QFormLayout, QSpinBox, QLineEdit, QComboBox, QPushButton,
     QTabWidget, QColorDialog, QDialogButtonBox, QWidget, QVBoxLayout,
-    QLabel, QScrollArea, QHBoxLayout
+    QLabel, QScrollArea, QHBoxLayout, QCheckBox
 )
 from PySide6.QtGui import QColor
 from PySide6.QtCore import Qt
@@ -116,6 +116,11 @@ class SettingsDialog(QDialog):
             field.clicked.connect(lambda: self._pick_color(field))
             return field
 
+        if spec["type"] == bool:
+            field = QCheckBox()
+            field.setChecked(current_value)
+            return field
+
         raise ValueError(f"Unsupported setting type: {spec['type']}")
 
     # ---- reading and writing field values --------------------------------
@@ -127,6 +132,8 @@ class SettingsDialog(QDialog):
             return field.text()
         if isinstance(field, QComboBox):
             return field.currentText()
+        if isinstance(field, QCheckBox):
+            return field.isChecked()
         return field.property("color")   # the color QPushButton
 
     def _set_field_value(self, field, value):
@@ -136,6 +143,8 @@ class SettingsDialog(QDialog):
             field.setText(value)
         elif isinstance(field, QComboBox):
             field.setCurrentText(value)
+        elif isinstance(field, QCheckBox):
+            field.setChecked(value)
         else:
             self._update_color_button(field, value)
 

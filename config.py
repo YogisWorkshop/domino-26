@@ -10,6 +10,7 @@ GEAR_SIZE = 40
 GRID_SIZE = 80
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 800
+FULLSCREEN = True
 
 TILE_ICON_SIZE = 80
 
@@ -72,7 +73,8 @@ APPEARANCE_SPECS = [
 SYSTEM_SETTINGS = [
     {"key": "SCREEN_WIDTH", "label": "Screen Width", "type": int, "min": 320, "max": 7680},
     {"key": "SCREEN_HEIGHT", "label": "Screen Height", "type": int, "min": 240, "max": 4320},
-    {"key": "GRID_SIZE", "label": "Grid Size", "type": int, "min": 20, "max": 300}
+    {"key": "GRID_SIZE", "label": "Grid Size", "type": int, "min": 20, "max": 300},
+    {"key": "FULLSCREEN", "label": "Fullscreen", "type": bool, "default": True}
 ]
 
 INTERFACE_SETTINGS = [

@@ -60,8 +60,8 @@
       "id": "1",
       "id2": "2",
       "label": "",
-      "address": 0,
-      "address2": 0,
+      "address": 5,
+      "address2": 6,
       "protocol": "DCC",
       "col": 10,
       "row": 2
